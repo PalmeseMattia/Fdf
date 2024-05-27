@@ -1,6 +1,7 @@
 #include <mlx.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "fdf.h"
 
 int	key_hook(int keycode, t_mlx_context *context)
@@ -26,13 +27,25 @@ int main()
 		perror("MLX Error encountered while opening a connection!");
 		exit(EXIT_FAILURE);
 	}
+	
 	//WINDOW CREATION
 	context.window = mlx_new_window(context.connection, WIDTH, HEIGHT, "FDF");
+
 	//IMAGE CREATION
 	image = mlx_new_image(context.connection, WIDTH, HEIGHT);
-	mlx_put_image_to_window(context.connection, context.window, image, 0, 0);
 	image_pixels = mlx_get_data_addr(image, &image_data.bits_per_pixel, &image_data.size_line, &image_data.endian);
-	printf("%d %d %d\n", image_data.bits_per_pixel, image_data.size_line, image_data.endian);
+	
+	//DRAW PIXELS
+	for (int i = 0; i < WIDTH; i++) {
+		for (int j = 0; j < HEIGHT; j++) {
+			draw_pixel(image_pixels, image_data, i, j, 0xffff00ff);
+		}
+	}
+
+	//DRAW IMAGE
+	mlx_put_image_to_window(context.connection, context.window, image, 0, 0);
+	printf("%d\n", strlen(image_pixels));
+	
 	//ADD KEY HOOK
 	mlx_key_hook(context.window, key_hook, &context);
 	mlx_loop(context.connection);

@@ -70,7 +70,7 @@ void	draw_line(t_image_data image, t_point point0, t_point point1, int color)
 	}
 }
 
-void	draw_map(t_image_data image, t_map map, int color)
+void	draw_map(t_image_data image, t_map map, int color, t_settings s)
 {
 	int	i;
 	int	x;
@@ -83,10 +83,17 @@ void	draw_map(t_image_data image, t_map map, int color)
 		y = i / (map.size_map / map.size_line);
 		printf("X: %d Y: %d\n", x, y);
 		if (x < map.size_line)
-			draw_line(image, (t_point){x * 100, y * 100}, (t_point){(x + 1) * 100, y * 100}, color);
+			draw_line(
+				image, 
+				(t_point){(x + s.x_offset) * s.zoom, (y + s.y_offset) * s.zoom}, 
+				(t_point){(x + 1 + s.x_offset) * s.zoom, (y + s.y_offset) * s.zoom}, 
+				color);
 		if (y < (map.size_map / map.size_line))
-			draw_line(image, (t_point){x * 100, y * 100}, (t_point){x * 100, (y + 1) * 100}, color);
-		draw_line(image, (t_point){map.size_line * 100, 0}, (t_point){map.size_line * 100, (map.size_map/map.size_line) * 100}, color);
+			draw_line(
+				image, 
+				(t_point){(x + s.x_offset) * s.zoom, (y + s.y_offset) * s.zoom}, 
+				(t_point){(x + s.x_offset) * s.zoom, (y + 1 + s.y_offset) * s.zoom}, 
+				color);
 		i++;
 	}
 }

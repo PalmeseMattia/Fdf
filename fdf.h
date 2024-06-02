@@ -14,13 +14,21 @@
 # include <stdlib.h>
 # include <stdio.h>
 
-typedef struct s_image_data
+typedef struct s_point
 {
+	float	x;
+	float	y;
+	float	z;
+}	t_point;
+
+typedef struct s_image
+{
+	void	*image;
 	int	bits_per_pixel;
 	int	size_line;
 	int	endian;
 	char	*pixels;
-}	t_image_data;
+}	t_image;
 
 typedef struct s_settings
 {
@@ -31,20 +39,19 @@ typedef struct s_settings
 
 typedef struct s_map
 {
-	int	*map;
+	t_point	**map;
 	int	size_map;
 	int	size_line;
 }	t_map;
 
-typedef struct s_mlx_context
+typedef struct s_context
 {
-	void		*connection;
-	void		*window;
-	void		*p_img;
-	t_image_data	image;
+	void		*mlx;
+	void		*win;
+	t_image		image;
 	t_settings	settings;
 	t_map		map;
-}	t_mlx_context;
+}	t_context;
 
 typedef struct s_pixel
 {
@@ -54,17 +61,15 @@ typedef struct s_pixel
 	char	*alpha;
 }	t_pixel;
 
-typedef struct s_point
-{
-	int	x;
-	int	y;
-	int	z;
-}	t_point;
-
-int	key_hook(int keycode, t_mlx_context *context);
+int	key_hook(int keycode, t_context *context);
 t_pixel	get_pixel(char *p_pixel);
-void	draw_pixel(t_image_data image, int x, int y, int color);
-void	draw_line(t_image_data image, t_point point1, t_point point2, int color);
-void	draw_map(t_image_data image, t_map map, int color, t_settings settings);
+void	draw_pixel(t_image image, int x, int y, int color);
+void	draw_line(t_image image, t_point point1, t_point point2, int color);
+void	draw_map(t_image image, t_map map, int color);
+t_point **initialize_map(int *points, int rows, int cols);
+void shift_map(t_point **map, int x, int y);
+void print_map(t_point **map);
+void translate_map(t_point **map, int x, int y, int z);
+void scale_map(t_point **map, float scale);
 
 #endif

@@ -4,71 +4,76 @@
 #include <string.h>
 #include "fdf.h"
 
-int	key_hook(int keycode, t_mlx_context *context)
+int	key_hook(int keycode, t_context *context)
 {
 	printf("KEYCODE: %d\n", keycode);
 	if (keycode == R_ARROW)
-		context -> settings.x_offset += 1;
+		translate_map(context -> map.map, 10, 0, 0);
 	else if (keycode == L_ARROW)
-		context -> settings.x_offset -= 1;
+		translate_map(context -> map.map, -10, 0, 0);
 	else if (keycode == D_ARROW)
-		context -> settings.y_offset += 1;
+		translate_map(context -> map.map, 0, 10, 0);
 	else if (keycode == U_ARROW)
-		context -> settings.y_offset -= 1;
+		translate_map(context -> map.map, 0, -10, 0);
 	else if (keycode == W)
-		context -> settings.zoom += 1;
+	{
+		scale_map(context -> map.map, 2.0);
+		print_map(context -> map.map);
+	}
 	else if (keycode == S)
-		context -> settings.zoom -= 1;
+	{
+		scale_map(context -> map.map, 0.5);
+		print_map(context -> map.map);
+	}
 	else if (keycode == ESC)
 	{
-		mlx_destroy_window(context -> connection, context -> window);
+		mlx_destroy_window(context -> mlx, context -> win);
 		exit(EXIT_SUCCESS);
 	}
 	for (int i = 0; i < (context -> image.bits_per_pixel / 8) * WIDTH * HEIGHT; i++) {
 		*((context -> image.pixels) + i) = (char)0;
 	}
-	mlx_put_image_to_window(context -> connection, context -> window, context -> p_img, 0, 0);
-	draw_map(context -> image, context -> map, 0xffffffff, context -> settings);
+	draw_map(context -> image, context -> map, 0xffffffff);
+	mlx_put_image_to_window(context -> mlx, context -> win, context -> image.image, 0, 0);
 	return (0);
 }
 
 int main()
 {
-	t_mlx_context	context;
-	void		*image;
-	t_image_data	image_data;
-	int		*map;
+	t_context	context;
 
-	t_settings settings = {20, 10, 20};
-	context.settings = settings;
 	//CONNECTION TO GRAPHICAL SERVER
-	context.connection = mlx_init();
-	if (!context.connection) {
+	context.mlx = mlx_init();
+	if (!context.mlx) {
 		perror("MLX Error encountered while opening a connection!");
 		exit(EXIT_FAILURE);
 	}
 	
 	//WINDOW CREATION
-	context.window = mlx_new_window(context.connection, WIDTH, HEIGHT, "FDF");
+	context.win = mlx_new_window(context.mlx, WIDTH, HEIGHT, "FDF");
 
 	//IMAGE CREATION
-	image = mlx_new_image(context.connection, WIDTH, HEIGHT);
-	image_data.pixels = mlx_get_data_addr(image, &image_data.bits_per_pixel, &image_data.size_line, &image_data.endian);
-	context.image = image_data;
-	context.p_img = image;
+	context.image.image = mlx_new_image(context.mlx, WIDTH, HEIGHT);
+	context.image.pixels = mlx_get_data_addr(context.image.image, &context.image.bits_per_pixel, &context.image.size_line, &context.image.endian);
+	
 	//CREATE A SAMPLE MAP
-	map = malloc(16 * sizeof(int));
+	int *map = (int *)malloc(16 * sizeof(int));
 	for (int i = 0; i < 16; i++) {
-		*(map + i) = 0;
+		*(map + i) = i;
 	}
-	context.map = (t_map){map, 16, 4};
-	//DRAW PIXELS
-	draw_map(context.image, context.map, 0xffffffff, context.settings);
+	t_point **mappa = initialize_map(map, 4, 4);
+	context.map.map = mappa;
+	context.map.size_map = 16;
+	context.map.size_line = 4;
+
+	//DRAW MAP
+	draw_map(context.image, context.map, 0xffffffff);
+	
 	//DRAW IMAGE
-	mlx_put_image_to_window(context.connection, context.window, image, 0, 0);
+	mlx_put_image_to_window(context.mlx, context.win, context.image.image, 0, 0);
 	
 	//ADD KEY HOOK
-	mlx_key_hook(context.window, key_hook, &context);
-	mlx_loop(context.connection);
+	mlx_key_hook(context.win, key_hook, &context);
+	mlx_loop(context.mlx);
 	return (0);
 }

@@ -11,16 +11,17 @@ t_pixel	get_pixel(char *p_pixel)
 	return (result);
 }
 
-t_point	new_point(int x, int y)
+t_point	new_point(int x, int y, int z)
 {
 	t_point point;
 
 	point.x = x;
 	point.y = y;
+	point.z = z;
 	return (point);
 }
 
-void	draw_pixel(t_image_data image, int x, int y, int color)
+void	draw_pixel(t_image image, int x, int y, int color)
 {
 	int	byte_per_pixel;
 	int	column;
@@ -39,7 +40,7 @@ void	draw_pixel(t_image_data image, int x, int y, int color)
 	}
 }
 
-void	draw_line(t_image_data image, t_point point0, t_point point1, int color)
+void	draw_line(t_image image, t_point point0, t_point point1, int color)
 {
 	int dx = abs(point1.x - point0.x);
 	int sx = point0.x < point1.x ? 1 : -1;
@@ -70,30 +71,30 @@ void	draw_line(t_image_data image, t_point point0, t_point point1, int color)
 	}
 }
 
-void	draw_map(t_image_data image, t_map map, int color, t_settings s)
+void project_point(t_point *p, int d) {
+	int	z;
+
+	if (p -> z != 0)
+	{
+		z = p->z;
+		p -> x = (p->x / z) * d;
+		p -> y = (p->y / z) * d;
+	}
+}
+
+void	draw_map(t_image image, t_map map, int color)
 {
+	t_point	**point;
+	t_point	*r_point;
+	t_point	*d_point;
 	int	i;
-	int	x;
-	int	y;
 
 	i = 0;
-	while (i < map.size_map)
+	point = map.map;
+	while (*point)
 	{
-		x = i % (map.size_line); 
-		y = i / (map.size_map / map.size_line);
-		printf("X: %d Y: %d\n", x, y);
-		if (x < map.size_line)
-			draw_line(
-				image, 
-				(t_point){(x + s.x_offset) * s.zoom, (y + s.y_offset) * s.zoom}, 
-				(t_point){(x + 1 + s.x_offset) * s.zoom, (y + s.y_offset) * s.zoom}, 
-				color);
-		if (y < (map.size_map / map.size_line))
-			draw_line(
-				image, 
-				(t_point){(x + s.x_offset) * s.zoom, (y + s.y_offset) * s.zoom}, 
-				(t_point){(x + s.x_offset) * s.zoom, (y + 1 + s.y_offset) * s.zoom}, 
-				color);
+		draw_pixel(image, (*point) -> x, (*point) -> y, color);
 		i++;
+		point++;
 	}
 }
